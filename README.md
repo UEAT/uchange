@@ -2,7 +2,7 @@
 
 ## Usage
 
-`npx uchange``
+`npx uchange`
 
 The first execution will create your CHANGELOG.md file.
 
