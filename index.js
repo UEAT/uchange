@@ -96,7 +96,7 @@ function bumpVersion(content) {
 function getNextVersion(content) {
   const match = content.match(VERSION_REGEX);
   if (!match || match.length < 4) {
-    return "1.0.0";
+    return "0.0.0";
   }
 
   return `${match[1]}.${match[2]}.${parseInt(match[3]) + 1}`;
