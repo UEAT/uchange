@@ -2,11 +2,14 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 const inquirer = require("inquirer");
 
 const VERSION_REGEX = /([0-9]+)\.([0-9]+)\.([0-9]+)/;
 const STRICT_VERSION_REGEX = /^([0-9]+)\.([0-9]+)\.([0-9]+)$/;
 const CHANGELOG_PATH = path.join(process.cwd(), "CHANGELOG.md");
+const PACKAGEJSON_PATH = path.join(process.cwd(), "package.json");
+const APPVEYOR_PATH = path.join(process.cwd(), "appveyor.yml");
 
 if (!fs.existsSync(CHANGELOG_PATH)) {
   init();
@@ -111,12 +114,50 @@ function addContent(content, version) {
   content =
     content.substr(0, startIndex) +
     NEXT_TEMPLATE +
-    "\r\n\r\n" +
+    "\r\n" +
     content.substr(startIndex);
 
   saveContent(content);
+  saveNodePackage(version);
+  saveAppVeyor(version);
+  commitGit(version);
 }
 
 function saveContent(content) {
   fs.writeFileSync(CHANGELOG_PATH, content);
+}
+
+function saveNodePackage(version) {
+  if (!fs.existsSync(PACKAGEJSON_PATH)) {
+    return;
+  }
+
+  let content = fs.readFileSync(PACKAGEJSON_PATH).toString();
+  content = content.replace(/"version": "[^"]*"/, `"version": "${version}"`);
+  fs.writeFileSync(PACKAGEJSON_PATH, content);
+}
+
+function saveAppVeyor(version) {
+  if (!fs.existsSync(APPVEYOR_PATH)) {
+    return;
+  }
+
+  let content = fs.readFileSync(APPVEYOR_PATH).toString();
+  const match = version.match(VERSION_REGEX);
+  const major = match[1];
+  const minor = match[2];
+  const patch = match[3];
+
+  content = content.replace(/major\: [0-9]+/, `major: ${major}`);
+  content = content.replace(/minor\: [0-9]+/, `minor: ${minor}`);
+  content = content.replace(/patch\: [0-9]+/, `patch: ${patch}`);
+
+  fs.writeFileSync(APPVEYOR_PATH, content);
+}
+
+function commitGit(version) {
+  execSync("git add -A");
+  execSync(`git commit -m "Release ${version}\"`);
+  execSync(`git tag v${version}`);
+  execSync(`git push origin : v${version}`);
 }
