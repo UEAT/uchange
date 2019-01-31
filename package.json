@@ -1,0 +1,13 @@
+{
+  "name": "uchange",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "uathor": "Benoit Tremblay <btremblay@ueat.io>",
+  "bin": {
+    "uchange": "./index.js"
+  },
+  "dependencies": {
+    "inquirer": "^6.2.2"
+  }
+}
